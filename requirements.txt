@@ -1,0 +1,4 @@
+sounddevice
+wavio
+scipy
+numpy
