@@ -8,11 +8,26 @@ class GUI:
         self.root = root
         self.root.title("Recorder")
         self.root.resizable(True, True)
-        self.root.geometry("1270x700")
+        self.root.geometry("800x600")
         self.recorder = AudioRecorder()
 
         self.frame = tk.Frame(self.root)
         self.frame.pack(pady=20)
+
+        tk.Label(self.frame, text="Vstupné zariadenie:").pack()
+        self.device_var = tk.StringVar()
+        device_names = self.get_device_names()
+        self.device_menu = tk.OptionMenu(self.frame, self.device_var, *device_names)
+        self.device_menu.pack(pady=5)
+        default_device_index = self.recorder.device
+        if default_device_index is not None:
+            for name in device_names:
+                if name.startswith(f"{default_device_index}:"):
+                    self.device_var.set(name)
+                    break
+        else:
+            self.device_var.set(device_names[0] if device_names else "No device detected")
+        self.device_var.trace("w", self.update_device)
 
         tk.Label(self.frame, text="Filename: ").pack()
         self.filename_entry = tk.Entry(self.frame, width=30)
@@ -32,6 +47,19 @@ class GUI:
 
         self.status_label = tk.Label(self.frame, text="Ready")
         self.status_label.pack(pady=5)
+
+    def get_device_names(self):
+        devices = self.recorder.getAvailableDevices()
+        return [f"{i}: {name}" for i, name in devices]
+
+    def update_device(self, *args):
+        selected = self.device_var.get()
+        if selected:
+            device_index = int(selected.split(":")[0])
+            success, message = self.recorder.setDevice(device_index)
+            self.status_label.config(text=message)
+            if not success:
+                messagebox.showerror("Chyba", message)
 
     def start_recording(self):
         try:
@@ -62,7 +90,7 @@ class GUI:
         self.record_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
-        if success and not self.recorder.stop():
+        if success and not self.recorder.stopped:
             filename = self.filename_entry.get().strip()
             success, save_message = self.recorder.save(filename)
             messagebox.showinfo("success", save_message) if success else messagebox.showerror("error", save_message)
