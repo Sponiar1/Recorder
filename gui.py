@@ -16,13 +16,14 @@ class GUI:
 
         tk.Label(self.frame, text="Vstupné zariadenie:").pack()
         self.device_var = tk.StringVar()
-        device_names = self.get_device_names()
+        self.device_map = self.get_device_map()
+        device_names = list(self.device_map.keys())
         self.device_menu = tk.OptionMenu(self.frame, self.device_var, *device_names)
         self.device_menu.pack(pady=5)
         default_device_index = self.recorder.device
         if default_device_index is not None:
-            for name in device_names:
-                if name.startswith(f"{default_device_index}:"):
+            for name, index in self.device_map.items():
+                if index == default_device_index:
                     self.device_var.set(name)
                     break
         else:
@@ -48,18 +49,20 @@ class GUI:
         self.status_label = tk.Label(self.frame, text="Ready")
         self.status_label.pack(pady=5)
 
-    def get_device_names(self):
+    def get_device_map(self):
         devices = self.recorder.getAvailableDevices()
-        return [f"{i}: {name}" for i, name in devices]
+        return {name: i for i, name in devices}
+
 
     def update_device(self, *args):
         selected = self.device_var.get()
-        if selected:
-            device_index = int(selected.split(":")[0])
-            success, message = self.recorder.setDevice(device_index)
-            self.status_label.config(text=message)
-            if not success:
-                messagebox.showerror("Chyba", message)
+        if selected and selected != "No device detected":
+            device_index = self.device_map.get(selected)
+            if device_index is not None:
+                success, message = self.recorder.setDevice(device_index)
+                self.status_label.config(text=message)
+                if not success:
+                    messagebox.showerror("Chyba", message)
 
     def start_recording(self):
         try:
@@ -94,7 +97,6 @@ class GUI:
             filename = self.filename_entry.get().strip()
             success, save_message = self.recorder.save(filename)
             messagebox.showinfo("success", save_message) if success else messagebox.showerror("error", save_message)
-
 
     def run(self):
         self.root.mainloop()

@@ -1,3 +1,5 @@
+import os
+
 import sounddevice as sd
 import wavio as w
 import numpy as np
@@ -80,12 +82,17 @@ class AudioRecorder:
     def save(self, filename):
         if self.recording is None:
             return False, "Nothing to save"
-        if not filename.endswith(".wav"):
-            filename += ".wav"
+        base_name = filename if not filename.endswith(".wav") else filename[:-4]
+        full_name = base_name + ".wav"
+        counter = 1
+
+        while os.path.exists(full_name):
+            full_name = f"{base_name}({counter}).wav"
+            counter += 1
 
         try:
-            write(filename,self.freq,self.recording)
-            #w.write(filename, recording, freq, sampwidth=2)
+            write(full_name,self.freq,self.recording)
+            #w.write(full_name, recording, freq, sampwidth=2)
             return True, "Saved recording"
         except Exception as e:
             return False, f"Failed to save recording: {e}"
