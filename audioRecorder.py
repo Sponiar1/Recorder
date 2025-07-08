@@ -1,10 +1,14 @@
 import os
-
+from pydub import AudioSegment
+ffmpeg_path = os.path.join(os.path.dirname(__file__), "ffmpeg", "ffmpeg.exe")
+if os.path.exists(ffmpeg_path):
+    AudioSegment.ffmpeg = ffmpeg_path
+else:
+    raise FileNotFoundError(f"ffmpeg.exe not found at {ffmpeg_path}")
 import sounddevice as sd
-import wavio as w
 import numpy as np
-import scipy as sc
 from scipy.io.wavfile import write
+
 
 class AudioRecorder:
     def __init__(self):
@@ -91,11 +95,11 @@ class AudioRecorder:
             self.stream = None
         self.recording = np.concatenate(self.frames, axis=0) if self.frames else None
 
-    def save(self, filename):
+    def save(self, filename, file_format = 'wav'):
         if self.recording is None:
             return False, "Nothing to save"
-        base_name = filename if not filename.endswith(".wav") else filename[:-4]
-        full_name = base_name + ".wav"
+        base_name = filename if not filename.endswith(f".{format}") else filename[:-len(format) - 1]
+        full_name = f"{base_name}.{format}"
         counter = 1
 
         while os.path.exists(full_name):
@@ -103,8 +107,19 @@ class AudioRecorder:
             counter += 1
 
         try:
-            write(full_name,self.freq,self.recording)
-            #w.write(full_name, recording, freq, sampwidth=2)
-            return True, "Saved recording"
+            temp_wav = f"{base_name}_temp.wav"
+            write(temp_wav, self.freq, self.recording)
+
+            audio = AudioSegment.from_wav(temp_wav)
+            if format == "mp3":
+                audio.export(full_name, format="mp3")
+            elif format == "wav":
+                os.rename(temp_wav, full_name)
+            else:
+                os.remove(temp_wav)
+                return False, f"Unsupported format: {format}"
+
+            os.remove(temp_wav)
+            return True, f"Saved recording as {format.upper()}"
         except Exception as e:
             return False, f"Failed to save recording: {e}"

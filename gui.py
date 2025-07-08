@@ -32,13 +32,11 @@ class GUI:
             self.device_var.set(device_names[0] if device_names else "No device detected")
         self.device_var.trace("w", self.update_device)
 
-        #Format dropdown
-        tk.Label(self.frame, text="Format:").pack()
-        self.format_var = tk.StringVar()
-        formats=["WAV", "MP3"]
-        self.format_menu = tk.OptionMenu(self.frame, self.format_var, *formats)
-        self.format_var.set(formats[0])
-        self.format_menu.pack(pady=5)
+        # Format label
+        tk.Label(self.frame, text="Formát:").pack()
+        self.format_var = tk.StringVar(value="wav")
+        format_menu = tk.OptionMenu(self.frame, self.format_var, "wav","mp3")
+        format_menu.pack(pady=5)
 
         #Filename label
         tk.Label(self.frame, text="Filename: ").pack()
@@ -109,7 +107,8 @@ class GUI:
             self.record_button.config(state=tk.NORMAL)
             self.stop_button.config(state=tk.DISABLED)
             filename = self.filename_entry.get().strip()
-            success, save_message = self.recorder.save(filename)
+            file_format = self.format_var.get()
+            success, save_message = self.recorder.save(filename, file_format)
             self.show_popup("Success" if success else "Error", save_message, "success" if success else "error")
 
     def show_popup(self, title, message, popup_type):
