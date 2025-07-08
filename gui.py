@@ -32,13 +32,8 @@ class GUI:
 
         tk.Label(self.frame, text="Filename: ").pack()
         self.filename_entry = tk.Entry(self.frame, width=30)
-        self.filename_entry.insert(0, "recording.wav")
+        self.filename_entry.insert(0, "recording")
         self.filename_entry.pack(pady=5)
-
-        tk.Label(self.frame, text="Duration: ").pack()
-        self.duration_entry = tk.Entry(self.frame, width=10)
-        self.duration_entry.insert(0, "5")
-        self.duration_entry.pack(pady=5)
 
         self.record_button = tk.Button(self.frame, text="Record", command=self.start_recording)
         self.record_button.pack(pady=5)
@@ -65,24 +60,19 @@ class GUI:
                     messagebox.showerror("Chyba", message)
 
     def start_recording(self):
-        try:
-            duration = float(self.duration_entry.get())
-            if duration <= 0:
-                messagebox.showerror("Error", "Duration must be a positive number.")
-                return
-        except ValueError:
-            messagebox.showerror("Error", "Duration must be a positive number.")
+        if self.device_var.get() == "No device detected":
+            messagebox.showerror("Error", "Select input device")
             return
 
         self.record_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        self.status_label.config(text="Recording...")
+        self.status_label.config(text="Recording")
 
         def record_thread():
-            success, message = self.recorder.start(duration=duration)
+            success, message = self.recorder.start()
             self.root.after(0, self.update_status, success, message)
 
-        threading.Thread(target=record_thread).start()
+        threading.Thread(target=record_thread, daemon = True).start()
 
     def stop_recording(self):
         self.recorder.stop()
@@ -90,10 +80,10 @@ class GUI:
 
     def update_status(self, success, message):
         self.status_label.config(text=message)
-        self.record_button.config(state=tk.NORMAL)
-        self.stop_button.config(state=tk.DISABLED)
 
-        if success and not self.recorder.stopped:
+        if success and self.recorder.stopped:
+            self.record_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.DISABLED)
             filename = self.filename_entry.get().strip()
             success, save_message = self.recorder.save(filename)
             messagebox.showinfo("success", save_message) if success else messagebox.showerror("error", save_message)

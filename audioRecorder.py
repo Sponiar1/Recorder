@@ -10,15 +10,14 @@ class AudioRecorder:
     def __init__(self):
         # Sampling frequency
         self.freq = 44100
-        # Recording duration
-        self.duration = 5
         # Channel
         self.channels = 2
-
         self.isRecording = False
         self.recording = None
         self.stopped = False
         self.device = None
+        self.stream = None
+        self.frames = []
         self.setDefaultDevice()
 
     def setDefaultDevice(self):
@@ -54,30 +53,43 @@ class AudioRecorder:
         except Exception as e:
             return False, f"Failed to set device: {e}"
 
-    def start(self, duration):
+    def start(self):
         if self.isRecording:
-            print("Recording already started.")
-            return False
+            return False, "Recording already started."
 
         print("Recording...")
         self.isRecording = True
+        self.stopped = False
+        self.frames = []
         try:
-            self.recording = sd.rec(int(duration * self.freq),samplerate=self.freq,channels=self.channels, device=self.device)
-            sd.wait()
-            if not self.stopped:
-                return True, "Recording finished."
-            else:
-                return True, "Recording stopped."
+            self.stream = sd.InputStream(
+                samplerate=self.freq,
+                channels=self.channels,
+                device=self.device,
+                callback=self._callback
+            )
+            self.stream.start()
+            return True, "Recording started."
         except Exception as e:
             self.isRecording = False
             return False, f"Failed to start recording: {e}"
-        finally:
-            self.isRecording = False
+
+    def _callback(self, indata, frames, time, status):
+        if status:
+            print(f"Stream status: {status}")
+        if self.isRecording:
+            self.frames.append(indata.copy())
 
     def stop(self):
+        if not self.isRecording:
+            return
         self.stopped = True
         self.isRecording = False
-        sd.stop()
+        if self.stream:
+            self.stream.stop()
+            self.stream.close()
+            self.stream = None
+        self.recording = np.concatenate(self.frames, axis=0) if self.frames else None
 
     def save(self, filename):
         if self.recording is None:
