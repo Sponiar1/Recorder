@@ -9,19 +9,25 @@ class GUI:
         self.root = root
         self.root.title("Recorder")
         self.root.resizable(True, True)
-        self.root.geometry("800x600")
+        self.root.geometry("800x500")
         self.recorder = AudioRecorder()
 
-        self.frame = tk.Frame(self.root)
-        self.frame.pack(pady=20)
+        self.option_frame = tk.Frame(self.root)
+        self.option_frame.place(x=10, y=10, anchor="nw")
+
+        self.button_frame = tk.Frame(self.root)
+        self.button_frame.place(relx=0.5, y=10, anchor="n")
+
+        self.quickOptions_frame = tk.Frame(self.root)
+        self.quickOptions_frame.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
 
         #Input label
-        tk.Label(self.frame, text="Vstupné zariadenie:").pack()
+        tk.Label(self.option_frame, text="Input device:").pack(anchor="w")
         self.device_var = tk.StringVar()
         self.device_map = self.get_device_map()
         device_names = list(self.device_map.keys())
-        self.device_menu = tk.OptionMenu(self.frame, self.device_var, *device_names)
-        self.device_menu.pack(pady=5)
+        self.device_menu = tk.OptionMenu(self.option_frame, self.device_var, *device_names)
+        self.device_menu.pack(pady=5, anchor="w")
         default_device_index = self.recorder.device
         if default_device_index is not None:
             for name, index in self.device_map.items():
@@ -33,26 +39,31 @@ class GUI:
         self.device_var.trace("w", self.update_device)
 
         # Format label
-        tk.Label(self.frame, text="Formát:").pack()
+        tk.Label(self.option_frame, text="Format:").pack(anchor="w")
         self.format_var = tk.StringVar(value="wav")
-        format_menu = tk.OptionMenu(self.frame, self.format_var, "wav","mp3")
-        format_menu.pack(pady=5)
+        format_menu = tk.OptionMenu(self.option_frame, self.format_var, "wav","mp3")
+        format_menu.pack(pady=5, anchor="w")
 
         #Filename label
-        tk.Label(self.frame, text="Filename: ").pack()
-        self.filename_entry = tk.Entry(self.frame, width=30)
+        tk.Label(self.option_frame, text="Filename: ").pack(anchor="w")
+        self.filename_entry = tk.Entry(self.option_frame, width=30)
         self.filename_entry.insert(0, "recording")
-        self.filename_entry.pack(pady=5)
-
-        #Buttons
-        self.record_button = tk.Button(self.frame, text="Record", command=self.start_recording)
-        self.record_button.pack(pady=5)
-        self.stop_button = tk.Button(self.frame, text="Stop recording", command=self.stop_recording)
-        self.stop_button.pack(pady=5)
+        self.filename_entry.pack(pady=5, anchor="w")
 
         #Status Label
-        self.status_label = tk.Label(self.frame, text="Ready")
-        self.status_label.pack(pady=5)
+        self.status_label = tk.Label(self.button_frame, text="Ready")
+        self.status_label.pack(pady=2)
+
+        #Buttons
+        self.record_button = tk.Button(self.button_frame, text="Record", command=self.start_recording)
+        self.record_button.pack(pady=5)
+        self.stop_button = tk.Button(self.button_frame, text="Stop recording", command=self.stop_recording)
+        self.stop_button.pack(pady=5)
+
+        self.dark_mode = False
+        self.theme_button = tk.Button(self.quickOptions_frame, text="☀️ Light", command=self.toggle_theme)
+        self.theme_button.place(x=10, rely=0.9, anchor="sw")
+        self.theme_button.pack()
 
         #Rec Label
         self.rec_indicator = tk.Label(self.root, text="● REC", fg="red", font=("Arial", 14, "bold"))
@@ -65,14 +76,14 @@ class GUI:
         devices = self.recorder.getAvailableDevices()
         return {name: i for i, name in devices}
 
-
     def update_device(self, *args):
         selected = self.device_var.get()
         if selected and selected != "No device detected":
             device_index = self.device_map.get(selected)
             if device_index is not None:
                 success, message = self.recorder.setDevice(device_index)
-                self.status_label.config(text=message)
+                #self.status_label.config(text=message)
+                self.show_popup("Input changed", message, "success")
                 if not success:
                     messagebox.showerror("Chyba", message)
 
@@ -152,6 +163,34 @@ class GUI:
 
         fade_in()
         self.root.after(3000, lambda: self.popup.destroy() if self.popup.winfo_exists() else None)
+
+    def toggle_theme(self):
+        self.dark_mode = not self.dark_mode
+        bg = "#2e2e2e" if self.dark_mode else "#f0f0f0"
+        fg = "#ffffff" if self.dark_mode else "#000000"
+        entry_bg = "#3c3f41" if self.dark_mode else "#ffffff"
+        entry_fg = "#ffffff" if self.dark_mode else "#000000"
+        button_bg = "#444" if self.dark_mode else "#e0e0e0"
+        self.root.configure(background=bg)
+        self.button_frame.configure(bg=bg)
+        self.option_frame.configure(bg=bg)
+        self.quickOptions_frame.configure(bg=bg)
+
+        for frame in [self.button_frame, self.option_frame, self.quickOptions_frame]:
+            for widget in frame.winfo_children():
+                if isinstance(widget, tk.Label):
+                    widget.configure(background=bg, foreground=fg)
+                elif isinstance(widget, tk.Entry):
+                    widget.configure(background=entry_bg, foreground=entry_fg, insertbackground=fg)
+                elif isinstance(widget, tk.Button):
+                    widget.configure(background=button_bg, foreground=fg)
+                elif isinstance(widget, tk.OptionMenu):
+                    widget.configure(bg=button_bg, fg=fg)
+                    widget["menu"].configure(background=button_bg, foreground=fg)
+
+        self.status_label.configure(bg=bg, fg=fg)
+        self.rec_indicator.configure(bg=bg)
+        self.theme_button.configure(text="🌙 Dark" if not self.dark_mode else "☀️ Light", bg=button_bg, fg=fg)
 
     def run(self):
         self.root.mainloop()
