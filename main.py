@@ -1,8 +1,8 @@
-import tkinter as tk
 from gui import *
+import ttkbootstrap as ttk
 
 def main():
-    root = tk.Tk()
+    root = ttk.Window(themename="darkly")
     app = GUI(root)
     app.run()
 
