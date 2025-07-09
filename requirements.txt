@@ -2,4 +2,3 @@ sounddevice
 wavio
 scipy
 numpy
-pydub
