@@ -1,5 +1,4 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
 from tkinter import messagebox
 import threading
 from audioRecorder import AudioRecorder
@@ -13,16 +12,15 @@ class GUI:
         self.root.geometry("800x500")
         self.recorder = AudioRecorder()
 
-        self.option_frame = ttk.Frame(self.root)
+        self.option_frame = ttk.Frame(self.root, padding="10 10 10 10")
+        self.button_frame = ttk.Frame(self.root, padding="10 10 10 10")
+        self.toolbar_frame = ttk.Frame(self.root, padding="10 10 10 10")
+
         self.option_frame.place(x=10, y=10, anchor="nw")
-
-        self.button_frame = ttk.Frame(self.root)
         self.button_frame.place(relx=0.5, y=10, anchor="n")
+        self.toolbar_frame.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
 
-        self.quickOptions_frame = ttk.Frame(self.root)
-        self.quickOptions_frame.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
-
-        #Input label
+        # Input label
         ttk.Label(self.option_frame, text="Input device:").pack(anchor="w")
         self.device_var = ttk.StringVar()
         self.device_map = self.get_device_map()
@@ -42,31 +40,31 @@ class GUI:
         # Format label
         ttk.Label(self.option_frame, text="Format:").pack(anchor="w")
         self.format_var = ttk.StringVar(value="wav")
-        format_menu = ttk.OptionMenu(self.option_frame, self.format_var, "wav","mp3")
+        format_menu = ttk.OptionMenu(self.option_frame, self.format_var, "wav", "mp3", "wav")
         format_menu.pack(pady=5, anchor="w")
 
-        #Filename label
+        # Filename label
         ttk.Label(self.option_frame, text="Filename: ").pack(anchor="w")
         self.filename_entry = ttk.Entry(self.option_frame, width=30)
         self.filename_entry.insert(0, "recording")
         self.filename_entry.pack(pady=5, anchor="w")
 
-        #Status Label
+        # Status Label
         self.status_label = ttk.Label(self.button_frame, text="Ready")
         self.status_label.pack(pady=2)
 
-        #Buttons
+        # Buttons
         self.record_button = ttk.Button(self.button_frame, text="Record", command=self.start_recording)
         self.record_button.pack(pady=5)
         self.stop_button = ttk.Button(self.button_frame, text="Stop recording", command=self.stop_recording)
         self.stop_button.pack(pady=5)
 
         self.dark_mode = False
-        self.theme_button = ttk.Button(self.quickOptions_frame, text="☀️ Light", command=self.toggle_theme)
+        self.theme_button = ttk.Button(self.toolbar_frame, text="☀️ Light", command=self.toggle_theme)
         self.theme_button.place(x=10, rely=0.9, anchor="sw")
         self.theme_button.pack()
 
-        #Rec Label
+        # Rec Label
         self.rec_indicator = ttk.Label(self.root, text="● REC", foreground="red", font=("Arial", 14, "bold"))
         self.rec_indicator.place(relx=0.95, rely=0.05, anchor="ne")
         self.rec_indicator.place_forget()
@@ -129,37 +127,34 @@ class GUI:
 
         self.popup = ttk.Toplevel(self.root)
         self.popup.title(title)
-        self.popup.geometry("250x100")
+        self.popup.geometry("300x150")
         self.popup.resizable(False, False)
         self.popup.transient(self.root)
         self.popup.overrideredirect(True)
         self.popup.attributes("-topmost", True)
         self.popup.lift()
-        self.popup.focus_force()
-        self.popup.update()
-        bg_color = "light green" if popup_type == "success" else "light coral"
-        self.popup.configure(bg=bg_color)
 
-        frame = ttk.Frame(self.popup, background=bg_color)
-        frame.pack(fill="both", expand=True, padx=5, pady=5)
+        frame = ttk.Frame(self.popup, bootstyle=popup_type, padding=10)
+        frame.pack(fill="both", expand=True)
 
-        ttk.Label(frame, text=message, wraplength=200, bg=bg_color, font=("Arial", 10)).pack(pady=5)
-        close_button = ttk.Button(frame, text="✕", command=self.popup.destroy, bg=bg_color, font=("Arial", 10),
-                                 relief="flat")
+        label = ttk.Label(frame, text=message, wraplength=225, justify="left", font=("Arial", 10),
+                          background="#28a745")
+        label.pack(side="left", padx=10, fill="y")
+
+        close_button = ttk.Button(frame, text="X", command=self.popup.destroy, style=f"{popup_type}.TButton")
         close_button.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
 
-        self.popup.update_idletasks()
-        width=self.popup.winfo_width()
-        height = self.popup.winfo_height()
-        x = self.root.winfo_x() + self.root.winfo_width() - width - 10
-        y = self.root.winfo_y() + self.root.winfo_height() - height - 10
-        self.popup.geometry(f"{width}x{height}+{x}+{y}")
+        self.popup.update()
+        x = self.root.winfo_x() + self.root.winfo_width() - 310
+        y = self.root.winfo_y() + self.root.winfo_height() - 160
+        self.popup.geometry(f"+{x}+{y}")
 
         self.popup.attributes("-alpha", 0.0)
-        def fade_in(alpha = 0.0):
+
+        def fade_in(alpha=0.0):
             alpha += 0.1
             self.popup.attributes("-alpha", min(alpha, 1.0))
-            if alpha  < 1.0:
+            if alpha < 1.0:
                 self.root.after(50, fade_in, alpha)
 
         fade_in()

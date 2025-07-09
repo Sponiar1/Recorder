@@ -3,3 +3,4 @@ wavio
 scipy
 numpy
 ttkbootstrap
+configparser
