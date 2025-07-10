@@ -58,6 +58,7 @@ class GUI:
         self.record_button.pack(pady=5)
         self.stop_button = ttk.Button(self.button_frame, text="Stop recording", command=self.stop_recording)
         self.stop_button.pack(pady=5)
+        self.stop_button.configure(state="disabled")
 
         self.dark_mode = False
         self.theme_button = ttk.Button(self.toolbar_frame, text="☀️ Light", command=self.toggle_theme)
@@ -127,26 +128,26 @@ class GUI:
 
         self.popup = ttk.Toplevel(self.root)
         self.popup.title(title)
-        self.popup.geometry("300x150")
+        self.popup.geometry("200x100")
         self.popup.resizable(False, False)
         self.popup.transient(self.root)
         self.popup.overrideredirect(True)
         self.popup.attributes("-topmost", True)
         self.popup.lift()
 
-        frame = ttk.Frame(self.popup, bootstyle=popup_type, padding=10)
+        frame = ttk.Frame(self.popup, bootstyle=popup_type, padding=5)
         frame.pack(fill="both", expand=True)
 
-        label = ttk.Label(frame, text=message, wraplength=225, justify="left", font=("Arial", 10),
-                          background="#28a745")
-        label.pack(side="left", padx=10, fill="y")
+        label = ttk.Label(frame, text=message, wraplength=150, justify="left", font=("Arial", 9),
+                          background="#00bc8c")
+        label.pack(side="left", padx=5, fill="y")
 
         close_button = ttk.Button(frame, text="X", command=self.popup.destroy, style=f"{popup_type}.TButton")
-        close_button.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+        close_button.place(relx=1.0, rely=0.0, anchor="ne", x=-5, y=5)
 
         self.popup.update()
-        x = self.root.winfo_x() + self.root.winfo_width() - 310
-        y = self.root.winfo_y() + self.root.winfo_height() - 160
+        x = self.root.winfo_x() + self.root.winfo_width() - 210
+        y = self.root.winfo_y() + self.root.winfo_height() - 110
         self.popup.geometry(f"+{x}+{y}")
 
         self.popup.attributes("-alpha", 0.0)
