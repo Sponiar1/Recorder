@@ -60,8 +60,16 @@ class GUI:
         self.stop_button.pack(pady=5)
         self.stop_button.configure(state="disabled")
 
-        self.dark_mode = False
-        self.theme_button = ttk.Button(self.toolbar_frame, text="☀️ Light", command=self.toggle_theme)
+        # Buttons
+        self.current_theme = self.root.style.theme_use()
+        self.theme_button = ttk.Button(self.toolbar_frame, command=self.toggle_theme)
+        if self.current_theme == "darkly":
+            self.dark_mode = True
+            self.theme_button.configure(text="☀️ Light")
+        else:
+            self.dark_mode = False
+            self.theme_button.configure(text="🌙 Dark")
+
         self.theme_button.place(x=10, rely=0.9, anchor="sw")
         self.theme_button.pack()
 
@@ -163,31 +171,12 @@ class GUI:
 
     def toggle_theme(self):
         self.dark_mode = not self.dark_mode
-        bg = "#2e2e2e" if self.dark_mode else "#f0f0f0"
-        fg = "#ffffff" if self.dark_mode else "#000000"
-        entry_bg = "#3c3f41" if self.dark_mode else "#ffffff"
-        entry_fg = "#ffffff" if self.dark_mode else "#000000"
-        button_bg = "#444" if self.dark_mode else "#e0e0e0"
-        self.root.configure(background=bg)
-        self.button_frame.configure(bg=bg)
-        self.option_frame.configure(bg=bg)
-        self.quickOptions_frame.configure(bg=bg)
-
-        for frame in [self.button_frame, self.option_frame, self.quickOptions_frame]:
-            for widget in frame.winfo_children():
-                if isinstance(widget, ttk.Label):
-                    widget.configure(background=bg, foreground=fg)
-                elif isinstance(widget, ttk.Entry):
-                    widget.configure(background=entry_bg, foreground=entry_fg, insertbackground=fg)
-                elif isinstance(widget, ttk.Button):
-                    widget.configure(background=button_bg, foreground=fg)
-                elif isinstance(widget, ttk.OptionMenu):
-                    widget.configure(bg=button_bg, fg=fg)
-                    widget["menu"].configure(background=button_bg, foreground=fg)
-
-        self.status_label.configure(bg=bg, fg=fg)
-        self.rec_indicator.configure(bg=bg)
-        self.theme_button.configure(text="🌙 Dark" if not self.dark_mode else "☀️ Light", bg=button_bg, fg=fg)
+        if self.dark_mode:
+            self.root.style.theme_use("darkly")
+            self.theme_button.configure(text="☀️ Light")
+        else:
+            self.root.style.theme_use("flatly")
+            self.theme_button.configure(text="🌙 Dark")
 
     def run(self):
         self.root.mainloop()
