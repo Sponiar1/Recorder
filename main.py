@@ -1,25 +1,14 @@
 from gui import *
 import ttkbootstrap as ttk
 import configparser
-
-SETTINGS_FILE = "settings.ini"
+from Settings import Settings
 
 def main():
-    theme = load_settings()
+    settings = Settings()
+    theme = settings.load_settings("DEFAULT", "theme")
     root = ttk.Window(themename=theme)
-    app = GUI(root)
+    app = GUI(root, settings)
     app.run()
-
-def load_settings():
-    config = configparser.ConfigParser()
-    config.read(SETTINGS_FILE)
-    return config['DEFAULT']['Theme']
-
-def save_settings(section, setting, value):
-    config = configparser.ConfigParser()
-    config[section][setting] = value
-    with open(SETTINGS_FILE, 'w') as configfile:
-        config.write(configfile)
 
 if __name__ == "__main__":
     main()

@@ -2,15 +2,17 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 import threading
 from audioRecorder import AudioRecorder
+from Settings import Settings
 
 class GUI:
-    def __init__(self, root):
+    def __init__(self, root, setting):
         #Window
         self.root = root
         self.root.title("Recorder")
         self.root.resizable(True, True)
         self.root.geometry("800x500")
         self.recorder = AudioRecorder()
+        self.setting = setting
 
         self.option_frame = ttk.Frame(self.root, padding="10 10 10 10")
         self.button_frame = ttk.Frame(self.root, padding="10 10 10 10")
@@ -39,8 +41,8 @@ class GUI:
 
         # Format label
         ttk.Label(self.option_frame, text="Format:").pack(anchor="w")
-        self.format_var = ttk.StringVar(value="wav")
-        format_menu = ttk.OptionMenu(self.option_frame, self.format_var, "wav", "mp3", "wav")
+        self.format_var = ttk.StringVar(value=self.get_setting("LAST_SETTINGS", "Format"))
+        format_menu = ttk.OptionMenu(self.option_frame, self.format_var, "wav", "mp3", "wav", command= lambda value: self.update_setting("LAST_SETTINGS", "Format", value))
         format_menu.pack(pady=5, anchor="w")
 
         # Filename label
@@ -174,9 +176,17 @@ class GUI:
         if self.dark_mode:
             self.root.style.theme_use("darkly")
             self.theme_button.configure(text="☀️ Light")
+            self.update_setting("DEFAULT", "theme", "darkly")
         else:
             self.root.style.theme_use("flatly")
             self.theme_button.configure(text="🌙 Dark")
+            self.update_setting("DEFAULT", "theme", "flatly")
+
+    def update_setting(self, section, key, value):
+        self.setting.save_settings(section, key, value)
+
+    def get_setting(self, section, key):
+        return self.setting.load_settings(section, key)
 
     def run(self):
         self.root.mainloop()
