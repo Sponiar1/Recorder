@@ -96,7 +96,7 @@ class GUI:
                 #self.status_label.config(text=message)
                 self.show_popup("Input changed", message, "success")
                 if not success:
-                    messagebox.showerror("Chyba", message)
+                    messagebox.showerror("Error", message)
 
     def start_recording(self):
         if self.device_var.get() == "No device detected":

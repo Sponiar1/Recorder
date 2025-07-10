@@ -7,6 +7,7 @@ def main():
     settings = Settings()
     theme = settings.load_settings("LAST_SETTINGS", "theme")
     root = ttk.Window(themename=theme)
+    root.iconbitmap("image.ico")
     app = GUI(root, settings)
     app.run()
 
