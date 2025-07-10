@@ -1,5 +1,5 @@
 import ttkbootstrap as ttk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import threading
 from audioRecorder import AudioRecorder
 from settings import Settings
@@ -46,11 +46,20 @@ class GUI:
         format_menu = ttk.OptionMenu(self.option_frame, self.format_var, loaded_format, "mp3", "wav", command= lambda value: self.update_setting("LAST_SETTINGS", "Format", value))
         format_menu.pack(pady=5, anchor="w")
 
-        # Filename label
+        # Filename entry
         ttk.Label(self.option_frame, text="Filename: ").pack(anchor="w")
         self.filename_entry = ttk.Entry(self.option_frame, width=30)
         self.filename_entry.insert(0, "recording")
         self.filename_entry.pack(pady=5, anchor="w")
+
+        # Filepath entry
+        ttk.Label(self.option_frame, text="Save location: ").pack(anchor="w")
+        self.filepath_var = ttk.StringVar()
+        self.filepath_entry = ttk.Entry(self.option_frame, textvariable=self.filepath_var, width=50, state="readonly")
+        self.filepath_var.set(setting.load_settings("LAST_SETTINGS", "last_path"))
+        self.filepath_entry.pack(pady=5, anchor="w")
+        self.browse_button = ttk.Button(self.option_frame, text="Browse", command=self.browse)
+        self.browse_button.pack(pady=5, anchor="w")
 
         # Status Label
         self.status_label = ttk.Label(self.button_frame, text="Ready")
@@ -63,7 +72,7 @@ class GUI:
         self.stop_button.pack(pady=5)
         self.stop_button.configure(state="disabled")
 
-        # Buttons
+        # Theme Buttons
         self.current_theme = self.root.style.theme_use()
         self.theme_button = ttk.Button(self.toolbar_frame, command=self.toggle_theme)
         if self.current_theme == "darkly":
@@ -132,6 +141,13 @@ class GUI:
             file_format = self.format_var.get()
             success, save_message = self.recorder.save(filename, file_format)
             self.show_popup("Success" if success else "Error", save_message, "success" if success else "error")
+
+    def browse(self):
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            self.update_setting("LAST_SETTINGS", "last_path", folder_path)
+            self.filepath_var.set(folder_path)
+
 
     def show_popup(self, title, message, popup_type):
         if self.popup:

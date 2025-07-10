@@ -8,7 +8,10 @@ class Settings:
 
     def load_settings(self, section, key):
         self.config.read(SETTINGS_FILE)
-        return self.config.get(section,key)
+        if self.config.has_option(section, key):
+            return self.config.get(section,key)
+        else:
+            return None
 
     def save_settings(self, section, setting, value):
         config = configparser.ConfigParser()
