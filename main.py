@@ -1,11 +1,11 @@
 from gui import *
 import ttkbootstrap as ttk
 import configparser
-from Settings import Settings
+from settings import Settings
 
 def main():
     settings = Settings()
-    theme = settings.load_settings("DEFAULT", "theme")
+    theme = settings.load_settings("LAST_SETTINGS", "theme")
     root = ttk.Window(themename=theme)
     app = GUI(root, settings)
     app.run()
