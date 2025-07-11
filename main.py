@@ -1,6 +1,5 @@
 from gui import *
 import ttkbootstrap as ttk
-import configparser
 from settings import Settings
 
 def main():

@@ -1,11 +1,13 @@
+import subprocess
 import ttkbootstrap as ttk
 from tkinter import messagebox, filedialog
 import threading
 from audioRecorder import AudioRecorder
 from settings import Settings
+import os
 
 class GUI:
-    def __init__(self, root, setting):
+    def __init__(self, root, setting: Settings):
         #Window
         self.root = root
         self.root.title("Recorder")
@@ -56,11 +58,12 @@ class GUI:
         ttk.Label(self.option_frame, text="Save location: ").pack(anchor="w")
         self.filepath_var = ttk.StringVar()
         self.filepath_entry = ttk.Entry(self.option_frame, textvariable=self.filepath_var, width=50, state="readonly")
-        self.filepath_var.set(setting.load_settings("LAST_SETTINGS", "last_path"))
+        self.filepath_var.set(self.setting.load_settings("LAST_SETTINGS", "last_path"))
         self.filepath_entry.pack(pady=5, anchor="w")
         self.browse_button = ttk.Button(self.option_frame, text="Browse", command=self.browse)
         self.browse_button.pack(pady=5, anchor="w")
-
+        self.explorer_button = ttk.Button(self.option_frame, text="Open", command=self.open_folder)
+        self.explorer_button.pack(pady=5, anchor="ne")
         # Status Label
         self.status_label = ttk.Label(self.button_frame, text="Ready")
         self.status_label.pack(pady=2)
@@ -148,6 +151,13 @@ class GUI:
             self.update_setting("LAST_SETTINGS", "last_path", folder_path)
             self.filepath_var.set(folder_path)
 
+    def open_folder(self):
+        path = self.filepath_var.get()
+        print(f"Trying to open: {path}")
+        if os.path.isdir(path):
+            subprocess.Popen(f'explorer "{path}"', shell=True)
+        else:
+            print("Path is invalid or does not exist!")
 
     def show_popup(self, title, message, popup_type):
         if self.popup:
