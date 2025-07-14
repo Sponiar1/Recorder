@@ -155,7 +155,8 @@ class GUI:
         path = self.filepath_var.get()
         print(f"Trying to open: {path}")
         if os.path.isdir(path):
-            subprocess.Popen(f'explorer "{path}"', shell=True)
+            #subprocess.Popen(f'explorer "{path}"', shell=True)
+            os.startfile(path)
         else:
             print("Path is invalid or does not exist!")
 
